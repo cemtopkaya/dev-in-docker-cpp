@@ -1,0 +1,123 @@
+FROM jenkins/jenkins:lts-jdk11 AS jenkins-base
+
+
+#--------------------------------------------------------------------------------------------------------------------------------#
+#                                         JENKINS HTTP/HTTPS AYARLARI                                                            #
+#                                                                                                                                #
+# Eğer jenkins MASTER'ın httpS çalışması isteniyorsa ve sertifikayı biz sağlayacaksak açık ve gizli anahtarları                  #
+# /var/lib/jenkins/cert ve /var/lib/jenkins/pk dizinlerine  kopyalayarak bu anahtarların jenkins grubundaki jenkins              #
+# kullanıcısına aitliğini verir:                                                                                                 #
+#   COPY --chown=jenkins:jenkins https.pem /var/lib/jenkins/cert                                                                 #
+#   COPY --chown=jenkins:jenkins https.key /var/lib/jenkins/pk                                                                   #
+#                                                                                                                                #
+# JENKINS_OPTS isimli ortam değişkenine ilgili anahtarlarla yazarız:                                                             #
+#   ENV JENKINS_OPTS --httpsCertificate=/var/lib/jenkins/cert --httpsPrivateKey=/var/lib/jenkins/pk                              #
+#                                                                                                                                #
+# http veya httpS çalışmasın istiyorsak --httpPort=-1 veya --httpsPort=-1 parametrelerini veririz:                               #
+#                                                                                                                                #
+# Jenkins'in http çalışacağı portu vermek için:                                                                                  #
+#   ENV JENKINS_OPTS --httpPort=8081                                                                                             #
+#                                                                                                                                #
+# Jenkins'in httpS çalışacağı portu vermek için                                                                                  #
+#   ENV JENKINS_OPTS --httpsPort=8082                                                                                            #
+#                                                                                                                                #
+#   COPY --chown=jenkins:jenkins https.pem /var/lib/jenkins/cert                                                                 #
+#   COPY --chown=jenkins:jenkins https.key /var/lib/jenkins/pk                                                                   #
+# ENV JENKINS_OPTS --httpPort=-1 --httpsPort=8083 --httpsCertificate=/var/lib/jenkins/cert --httpsPrivateKey=/var/lib/jenkins/pk #
+#                                                                                                                                #
+#--------------------------------------------------------------------------------------------------------------------------------#
+ENV JENKINS_OPTS --httpPort=8083
+
+#------------------------------------------------------------------------------------------#
+#                                  JENKINS EKLENTILERİ                                     #
+#                                                                                          #
+# Jenkins eklentilerini ister host içinden kopyalayabilir                                  #
+#   COPY ./jenkins-plugins/cem /var/jenkins_home/plugins                                   #
+#                                                                                          #
+# ister jenkins kurulurken yüklemesini sağlayabilirsiniz                                   #
+#   RUN echo "\n\                                                                          # 
+#   build-timeout:latest\n\                                                                # 
+#   dark-theme:latest\n\                                                                   # 
+#   configuration-as-code:latest\n\                                                        # 
+#   credentials-binding:latest\n\                                                          # 
+#   git:latest\n\                                                                          # 
+#   github-branch-source:latest\n\                                                         # 
+#   gradle:latest\n\                                                                       # 
+#   pam-auth:latest\n\                                                                     # 
+#   pipeline-github-lib:latest\n\                                                          # 
+#   pipeline-stage-view:latest\n\                                                          # 
+#   ssh-slaves:latest\n\                                                                   # 
+#   timestamper:latest\n\                                                                  # 
+#   workflow-aggregator:latest\n\                                                          # 
+#   ws-cleanup:latest\n\                                                                   # 
+#   allure-jenkins-plugin:latest\n\                                                        # 
+#   job-dsl:latest\n\                                                                      # 
+#   nodejs:latest\n\                                                                       # 
+#   docker-plugin:latest\n\                                                                # 
+#   docker-workflow:latest\n\                                                              # 
+#   chromedriver:latest\n\                                                                 # 
+#   " > /usr/share/jenkins/ref/plugins.txt                                                 # 
+#   RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt             # 
+#                                                                                          #
+# -----------------------------------------------------------------------------------------#
+
+COPY ./jenkins-plugins/plugins /var/jenkins_home/plugins
+VOLUME ["/var/jenkins_home/plugins"]
+
+# -----------------------------------------------------------------------------------------#
+#                               JENKINS KURULUM SİHİRBAZI                                  #
+# Jenkins master varsayılan olarak kurulum ile başlatılır. Kurulum yapmadan çalışması için #
+# jenkins.install.runSetupWizard=false  işaretlenir.                                       #
+#                                                                                          #
+# -----------------------------------------------------------------------------------------#
+ENV JAVA_OPTS -Djenkins.install.runSetupWizard=false
+
+VOLUME ["/var/jenkins_home"]
+
+
+FROM jenkins-base
+# COPY casc.yaml /var/jenkins_home/casc.yaml
+
+
+
+ENV CASC_JENKINS_CONFIG /var/jenkins_home/casc.yaml
+RUN echo 'jenkins:\n\
+  securityRealm:\n\
+    local:\n\
+      allowsSignup: false\n\
+      users:\n\
+        - id: admin\n\
+          password: admin\n\
+unclassified:\n\
+  location:\n\
+    url: http://192.168.55.10:8080/\n\
+  globalLibraries:\n\
+    libraries:\n\
+      - name: "stage-hooks"\n\
+        retriever:\n\
+          modernSCM:\n\
+            scm:\n\
+              git:\n\
+                remote: "https://github.com/alpekin98/jenkins-shared-library-sample"\n\
+  themeManager:\n\
+    disableUserThemes: true\n\
+    theme: "darkSystem" # use "dark" for forcing the dark theme regardless of OS settings\n\
+jobs:\n\
+  - script: >\n\
+      pipelineJob("self-study-cpp") {\n\
+        definition {\n\
+          cpsScm {\n\
+            scm {\n\
+              git {\n\
+                remote {\n\
+                  url("https://github.com/alpekin98/self-study-2.git")\n\
+                }\n\
+                branch("*/main")\n\
+              }\n\
+            }\n\
+            lightweight()\n\
+          }\n\
+        }\n\
+      }' >  /var/jenkins_home/casc.yaml
+
+EXPOSE 8083

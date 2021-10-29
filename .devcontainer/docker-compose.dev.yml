@@ -1,0 +1,84 @@
+version: '3.8'
+
+# network ismini belirler. Belirtilmezse bulunduğu klasör ismini alır.
+# : sonrasıda tipini belirtir.
+# birden fazla network kullanılabilir.
+networks:
+    5G_CN_Dev_Network:
+      driver: bridge
+      ipam:
+        config:
+          - subnet: 10.0.0.0/24
+            gateway: 10.0.0.1
+
+services:
+    jenkins:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      image: "cinar/pcf:dev"
+      container_name: pcfdev
+      privileged: true
+      
+
+    pcf:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      image: "cinar/pcf:dev"
+      container_name: pcfdev
+      privileged: true
+      # deploy:
+      #   resources:
+      #     limits:
+      #       cpus: '0.50'
+      #       memory: 250M
+      #     reservations:
+      #       cpus: '0.25'
+      #       memory: 100M
+      volumes:
+       - ../:/Source
+       - C:\Users\cem.topkaya\.vscode\extensions:/root/.vscode/extensions
+      #  - ../Includes/opt/cinar/include:/opt/cinar/include
+      #  - ${localSourceFolder}:${remoteSourceFolder}
+      # env_file: .env
+      ports:
+          - "8209:8209"
+      networks:
+          5G_CN_Dev_Network:
+            ipv4_address: 10.0.0.2
+      # depends_on:
+      #   - mongo
+
+    # mongo:
+    #   container_name: cinardb
+    #   image: mongo
+    #   environment:
+    #     MONGO_INITDB_ROOT_USERNAME: "cnrusr"
+    #     MONGO_INITDB_ROOT_PASSWORD: "P5vKG6vE"
+    # #     MONGODB_DATABASE: "cinarnrftest"
+    # #     DB_HOST: "mongodb://127.0.0.1"
+    #   command:
+    #     - mongo
+    #     - --authenticationDatabase
+    #     - admin -u cnrusr -p P5vKG6vE cinarnssftest
+    #     - --eval
+    #     - "db.createCollection('cinarnsicollection'); db.createCollection('cinarnssrulescollection');"
+    #   deploy:
+    #     resources:
+    #       limits:
+    #         cpus: '0.50'
+    #         memory: 250M
+    #       reservations:
+    #         cpus: '0.25'
+    #         memory: 100M
+    #   #volumes:
+    #   #  - type: bind
+    #   #    source: ./conf-nrf/settings.json
+    #   #    target: /opt/cinar/nrf/settings.json
+    #   ports:
+    #       - "27017:27017"
+    #   networks:
+    #       5G_CN_Dev_Network:
+    #         ipv4_address: 10.0.0.3
+

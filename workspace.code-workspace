@@ -1,0 +1,288 @@
+{
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
+    "tasks": {
+        "version": "2.0.0",
+        "inputs": [
+            {
+                "id": "param1",
+                "description": "mongo portu:",
+                "default": "27017",
+                "type": "promptString"
+            },
+            {
+                "id": "param2",
+                "description": "host portu:",
+                "default": "27017",
+                "type": "promptString"
+            },
+        ],
+        "tasks": [
+            {
+                "label": "run in jenkins",
+                "command": "docker-compose",
+                "args": [
+                    "run",
+                    "jenkins_env"
+                ],
+                "type": "shell",
+                "problemMatcher": []
+            },
+            {
+                "label": "Create MongoDb",
+                "command": "docker",
+                "args": [
+                    "run",
+                    "-d",
+                    "-p",
+                    "${input:param1}:${input:param2}",
+                    "mongo",
+                ],
+                "type": "shell",
+                "problemMatcher": []
+            },
+            {
+                "label": "Echo vars",
+                "command": "echo",
+                "args": [
+                    "cem",
+                    "${file}",
+                    "workspaceFolder = ${workspaceFolder}"
+                ],
+                "type": "shell",
+                "problemMatcher": []
+            },
+            {
+                "label": "make",
+                "command": "make",
+                "options": {
+                    "cwd": "${workspaceFolder}/nrf"
+                },
+                "args": [],
+                "type": "shell",
+                "problemMatcher": []
+            },
+            {
+                "label": "make test",
+                "command": "make",
+                "options": {
+                    "cwd": "${workspaceFolder}/nrf"
+                },
+                "args": [
+                    "test"
+                ],
+                "type": "shell",
+                "problemMatcher": []
+            }
+        ]
+    },
+    "launch": {
+        "configurations": [
+            {
+                "name": "(gdb) Attach",
+                "type": "cppdbg",
+                "request": "attach",
+                "program": "${workspaceFolder}/cnrnrf",
+                "processId": "${command:pickProcess}",
+                "MIMode": "gdb",
+                "setupCommands": [
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    }
+                ],
+                "sourceFileMap": {
+                    "${workspaceRoot}/src": "C:\\_Projects\\Source\\nrf\\src",
+                    "${workspaceRoot}/ulak_utility/src": "C:\\_Projects\\Source\\nrf\\ulak_utility\\src"
+                }
+            },
+            {
+                "name": "Remote Debug",
+                "type": "cppdbg",
+                "request": "launch",
+                "program": "/opt/cinar/cnrnrf",
+                // "program": "${workspaceFolder}/cnrnrf",
+                "stopAtEntry": false,
+                "cwd": "${workspaceFolder}/nrf/src",
+                "MIMode": "gdb",
+                "miDebuggerServerAddress": "localhost:8014",
+                "miDebuggerPath": "C:\\Program Files\\Ulak Haberlesme\\Cross GDB\\bin\\x86_64-linux-gnu-gdb.exe"
+            },
+            {
+                "name": "Remote Debug Windows",
+                "type": "cppdbg",
+                "request": "launch",
+                "program": "${workspaceFolder}/cnrnrf",
+                "stopAtEntry": false,
+                "cwd": "${workspaceFolder}/src",
+                "MIMode": "gdb",
+                "miDebuggerServerAddress": "192.168.33.10:9091",
+                "miDebuggerPath": "x86_64-linux-gnu-gdb.exe"
+            },
+            {
+                "name": "From HOST",
+                "type": "cppdbg",
+                "request": "attach",
+                "program": "/Source/cnrnrf",
+                "processId": "1414",
+                "pipeTransport": {
+                    "pipeCwd": "${workspaceRoot}",
+                    "pipeProgram": "docker",
+                    "pipeArgs": [
+                        "exec",
+                        "-i",
+                        "cnrfd",
+                        "sh",
+                        "-c"
+                    ],
+                    "debuggerPath": "/usr/bin/gdb"
+                },
+                "sourceFileMap": {
+                    "A": "${workspaceFolder}/src",
+                    "${workspaceRoot}/ulak_utility/src": "${workspaceFolder}/ulak_utility/src"
+                },
+                "linux": {
+                    "MIMode": "gdb",
+                    "setupCommands": [
+                        {
+                            "description": "Enable pretty-printing for gdb",
+                            "text": "-enable-pretty-printing",
+                            "ignoreFailures": true
+                        }
+                    ]
+                },
+                "osx": {
+                    "MIMode": "lldb"
+                },
+                "windows": {
+                    "MIMode": "gdb",
+                    "setupCommands": [
+                        {
+                            "description": "Enable pretty-printing for gdb",
+                            "text": "-enable-pretty-printing",
+                            "ignoreFailures": true
+                        }
+                    ]
+                }
+            },
+        ],
+        "compounds": []
+    },
+    "extensions": {
+
+        // "ms-vscode.cpptools@1.5.0"
+    },
+    "settings": {
+        "editor.folding": true,
+        "editor.minimap.enabled": false,
+        "extensions.ignoreRecommendations": true,
+        "extensions.autoCheckUpdates": false,
+        "files.associations": {
+            "cctype": "cpp",
+            "clocale": "cpp",
+            "cmath": "cpp",
+            "csignal": "cpp",
+            "cstdarg": "cpp",
+            "cstddef": "cpp",
+            "cstdio": "cpp",
+            "cstdlib": "cpp",
+            "cstring": "cpp",
+            "ctime": "cpp",
+            "cwchar": "cpp",
+            "cwctype": "cpp",
+            "array": "cpp",
+            "atomic": "cpp",
+            "strstream": "cpp",
+            "*.tcc": "cpp",
+            "bitset": "cpp",
+            "chrono": "cpp",
+            "codecvt": "cpp",
+            "complex": "cpp",
+            "condition_variable": "cpp",
+            "cstdint": "cpp",
+            "deque": "cpp",
+            "forward_list": "cpp",
+            "list": "cpp",
+            "unordered_map": "cpp",
+            "vector": "cpp",
+            "exception": "cpp",
+            "algorithm": "cpp",
+            "functional": "cpp",
+            "optional": "cpp",
+            "ratio": "cpp",
+            "string_view": "cpp",
+            "system_error": "cpp",
+            "tuple": "cpp",
+            "type_traits": "cpp",
+            "fstream": "cpp",
+            "future": "cpp",
+            "initializer_list": "cpp",
+            "iomanip": "cpp",
+            "iosfwd": "cpp",
+            "iostream": "cpp",
+            "istream": "cpp",
+            "limits": "cpp",
+            "memory": "cpp",
+            "mutex": "cpp",
+            "new": "cpp",
+            "ostream": "cpp",
+            "numeric": "cpp",
+            "sstream": "cpp",
+            "stdexcept": "cpp",
+            "streambuf": "cpp",
+            "thread": "cpp",
+            "cfenv": "cpp",
+            "cinttypes": "cpp",
+            "utility": "cpp",
+            "typeindex": "cpp",
+            "typeinfo": "cpp",
+            "valarray": "cpp",
+            "*.ipp": "cpp"
+        },
+        "C_Cpp.default.includePath": [
+            "${workspaceFolder}/nrf/src/**",
+            "${workspaceFolder}/nrf/ulak_utility/src/**",
+            "${workspaceFolder}/cinar_pcf_ams/src",
+            "${workspaceFolder}/cinar_pcf_sms/src",
+            "${workspaceFolder}/cinar_pcf_cs/src",
+            "/opt/cinar/include/**",
+            "/opt/cinar/include/15.201906-Interworking/**",
+            "/opt/cinar/include/cinarpcfcommon/Cinar/PCFCommonData/Model",
+            "/usr/include/mongocxx/v_noabi",
+            "/usr/include/bsoncxx/v_noabi",
+        ],
+        "C_Cpp.autocompleteAddParentheses": true,
+        "C_Cpp.default.compilerPath": "/usr/bin/gcc",
+        "C_Cpp.default.cppStandard": "gnu++14",
+        "C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
+        "C_Cpp.errorSquiggles": "Enabled",
+        "C_Cpp.loggingLevel": "Error",
+        "C_Cpp.intelliSenseCachePath": "/Source/cpp_intellisense_cachedir",
+        "C_Cpp.default.browse.databaseFilename": "cpp_browse_database_dosya_adi",
+        "C_Cpp.files.exclude": {
+            "**/dist": true,
+            "**/logs": true,
+            "**/obj": true,
+            "**/node_modules": true,
+            "**/bower_components": true,
+            "**/.openapi-generator": true,
+            "**/.vscode": true,
+            "**/.git": true,
+            "**/.svn": true,
+            "**/.hg": true,
+            "**/CVS": true,
+            "**/.DS_Store": true,
+            "**/Thumbs.db": true,
+            "**/.classpath": true,
+            "**/.project": true,
+            "**/.settings": true,
+            "**/.factorypath": true,
+            "**/*.code-search": true,
+        }
+        
+    }
+}
