@@ -1,0 +1,77 @@
+jenkins:
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: admin
+          password: admin
+
+security:
+  globaljobdslsecurityconfiguration:
+    useScriptSecurity: false
+
+unclassified:
+  location:
+    url: http://localhost:8083/
+  globalLibraries:
+    libraries:
+      - name: "ortak-kutuphane"
+        defaultVersion: "main"
+        implicit: true
+        retriever:
+          modernSCM:
+            scm:
+              git:
+                id: "ortak-kutuphane-pipeline-shared-lib"
+                remote: "https://github.com/cemtopkaya/jenkins-paylasilan-kutuphane-ornegi.git"
+  themeManager:
+    disableUserThemes: true
+    theme: "darkSystem" # use "dark" for forcing the dark theme regardless of OS settings
+
+jobs:
+  # - script: >
+  #     freeStyleJob("basit-freestyle-job") {
+  #       steps {
+  #           shell "echo freestyle içinden merhaba"
+  #       }
+  #     }
+  # - script: queue("basit-freestyle-job")
+  
+  # - script: |
+  #       //freeStyleJob("projenin-adi").with {
+  #       freeStyleJob("projenin-adi") {
+  #           //@Library("ortak-kutuphane@main") _
+  #           displayName("Job Listesinde Gorunen Adi")
+  #           label("master")
+  #           parameters {
+  #               stringParam("SCM_REPO","https://github.com/cemtopkaya/jenkinsfile-node-script-ornegi.git", "git adresi")
+  #               stringParam("SCM_BRANCH","main", "Git adresindeki hangi bransi cekecegimiz")
+  #           }
+  #           scm {
+  #               git("${SCM_REPO}", "${SCM_BRANCH}")
+  #           }
+  #           steps {
+  #               //def lib = library("ortak-kutuphane@main")
+  #               //sayHello "Selam sana ey dunya"
+  #           }
+  #       }
+  # - script: queue("projenin-adi")
+  # - script: queue("Job Listesinde Gorunen Adi")
+
+  - script: >
+      pipelineJob("jenkinsfile-ornegi") {
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote {
+                  url("https://github.com/cemtopkaya/jenkinsfile-node-script-ornegi.git")
+                }
+                branch("*/main")
+              }
+            }
+            lightweight()
+          }
+        }
+      }
+  - script: queue("jenkinsfile-ornegi")

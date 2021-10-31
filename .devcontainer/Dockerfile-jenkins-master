@@ -1,6 +1,5 @@
 FROM jenkins/jenkins:lts-jdk11 AS jenkins-base
 
-
 #--------------------------------------------------------------------------------------------------------------------------------#
 #                                         JENKINS HTTP/HTTPS AYARLARI                                                            #
 #                                                                                                                                #
@@ -75,49 +74,89 @@ ENV JAVA_OPTS -Djenkins.install.runSetupWizard=false
 VOLUME ["/var/jenkins_home"]
 
 
+# -----------------------------------------------------------------------------------------#
+#                               GELİŞTİRME TARAFI JENkİNS                                  #
+# -----------------------------------------------------------------------------------------#
 FROM jenkins-base
-# COPY casc.yaml /var/jenkins_home/casc.yaml
+USER root
+RUN apt update && apt install -y nano
 
 
 
+# ENV CASC_JENKINS_CONFIG /var/jenkins_home/ref/plugin_confs/
+# COPY jcasc_plugin_confs/ /var/jenkins_home/ref/plugin_confs/
 ENV CASC_JENKINS_CONFIG /var/jenkins_home/casc.yaml
-RUN echo 'jenkins:\n\
-  securityRealm:\n\
-    local:\n\
-      allowsSignup: false\n\
-      users:\n\
-        - id: admin\n\
-          password: admin\n\
-unclassified:\n\
-  location:\n\
-    url: http://192.168.55.10:8080/\n\
-  globalLibraries:\n\
-    libraries:\n\
-      - name: "stage-hooks"\n\
-        retriever:\n\
-          modernSCM:\n\
-            scm:\n\
-              git:\n\
-                remote: "https://github.com/alpekin98/jenkins-shared-library-sample"\n\
-  themeManager:\n\
-    disableUserThemes: true\n\
-    theme: "darkSystem" # use "dark" for forcing the dark theme regardless of OS settings\n\
-jobs:\n\
-  - script: >\n\
-      pipelineJob("self-study-cpp") {\n\
-        definition {\n\
-          cpsScm {\n\
-            scm {\n\
-              git {\n\
-                remote {\n\
-                  url("https://github.com/alpekin98/self-study-2.git")\n\
-                }\n\
-                branch("*/main")\n\
-              }\n\
-            }\n\
-            lightweight()\n\
-          }\n\
-        }\n\
-      }' >  /var/jenkins_home/casc.yaml
+# COPY casc.yaml /var/jenkins_home/casc.yaml
+VOLUME ["/var/jenkins_home/casc.yaml"]
+# RUN echo '\n\
+# jenkins:\n\
+#   securityRealm:\n\
+#     local:\n\
+#       allowsSignup: false\n\
+#       users:\n\
+#         - id: admin\n\
+#           password: admin\n\
+# \n\
+# security:\n\
+#   globaljobdslsecurityconfiguration:\n\
+#     useScriptSecurity: false\n\
+# \n\
+# unclassified:\n\
+#   location:\n\
+#     url: http://localhost:8083/\n\
+#   globalLibraries:\n\
+#     libraries:\n\
+#       - name: "ortak-kutuphane"\n\
+#         retriever:\n\
+#           modernSCM:\n\
+#             scm:\n\
+#               git:\n\
+#                 remote: "https://github.com/cemtopkaya/jenkins-paylasilan-kutuphane-ornegi.git"\n\
+#   themeManager:\n\
+#     disableUserThemes: true\n\
+#     theme: "darkSystem" # use "dark" for forcing the dark theme regardless of OS settings\n\
+# \n\
+# jobs:\n\
+#   - script: >\n\
+#       freeStyleJob("basit-freestyle-job") {\n\
+#         steps {\n\
+#             shell "echo freestyle içinden merhaba"\n\
+#         }\n\
+#       }\n\
+#   - script: queue("basit-freestyle-job")\n\
+#   - script: |\n\
+#         freeStyleJob("projenin-adi").with {\n\
+#             @Library("ortak-kutuphane") _\n\
+#             displayName("Job Listesinde Gorunen Adi")\n\
+#             label("master")\n\
+#             parameters {\n\
+#                 stringParam("SCM_REPO","https://github.com/cemtopkaya/jenkinsfile-node-script-ornegi.git", "git adresi")\n\
+#                 stringParam("SCM_BRANCH","main", "Git adresindeki hangi bransi cekecegimiz")\n\
+#             }\n\
+#             scm {\n\
+#                 git("${SCM_REPO}", "${SCM_BRANCH}")\n\
+#             }\n\
+#             steps {\n\
+#                 sayHello("Selam sana ey dunya")\n\
+#             }\n\
+#         }\n\
+#   - script: >\n\
+#       pipelineJob("jenkinsfile-ornegi") {\n\
+#         definition {\n\
+#           cpsScm {\n\
+#             scm {\n\
+#               git {\n\
+#                 remote {\n\
+#                   url("https://github.com/cemtopkaya/jenkinsfile-node-script-ornegi.git")\n\
+#                 }\n\
+#                 branch("*/main")\n\
+#               }\n\
+#             }\n\
+#             lightweight()\n\
+#           }\n\
+#         }\n\
+#       }\n\
+#   - script: queue("jenkinsfile-ornegi")\n\
+# ' >  /var/jenkins_home/casc.yaml
 
 EXPOSE 8083
